@@ -1,0 +1,5 @@
+module Dnai.Settings
+plugin dnaisettingsplugin
+classname DnaiSettingsPlugin
+typeinfo plugins.qmltypes
+designersupported
