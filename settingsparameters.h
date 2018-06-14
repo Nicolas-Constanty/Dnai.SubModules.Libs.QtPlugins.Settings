@@ -9,7 +9,7 @@ namespace dnai
 	class SettingsParameters : public QQuickItem
 	{
 		Q_OBJECT
-		Q_PROPERTY(QString settingFolder READ settingFolder WRITE setSettingFolder NOTIFY settingFolderChanged)
+        Q_PROPERTY(QString settingFolder READ settingFolder WRITE setSettingFolder NOTIFY settingFolderChanged)
 		Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
 		Q_PROPERTY(QSettings::Format format READ format WRITE setFormat NOTIFY formatChanged)
 		Q_PROPERTY(QStringList themeNames READ themeNames WRITE setThemeNames NOTIFY themeNamesChanged)
@@ -52,7 +52,7 @@ namespace dnai
 		void setCurrentTheme(const QString& value);
 
 	signals:
-		void settingFolderChanged(const QString& value);
+        void settingFolderChanged(const QString& value);
 		void prefixChanged(const QString& value);
 		void formatChanged(QSettings::Format value);
 		void themeNamesChanged(const QStringList& value);

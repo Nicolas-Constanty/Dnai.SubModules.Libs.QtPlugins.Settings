@@ -10,7 +10,7 @@ namespace dnai
 	class Settings : public QObject
 	{
         Q_OBJECT
-		Q_PROPERTY(QString settingFolder READ settingFolder WRITE setSettingFolder NOTIFY settingFolderChanged)
+        Q_PROPERTY(QString settingFolder READ settingFolder WRITE setSettingFolder NOTIFY settingFolderChanged)
 		Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
 		Q_PROPERTY(QSettings::Format format READ format WRITE setFormat NOTIFY formatChanged)
 		Q_PROPERTY(QStringList themeNames READ themeNames WRITE setThemeNames NOTIFY themeNamesChanged)
@@ -68,20 +68,20 @@ namespace dnai
 		const QVariantMap &theme() const;
 
 	signals :
-		void settingFolderChanged(const QString& value);
+        void settingFolderChanged(const QString& value);
 		void prefixChanged(const QString& value);
 		void formatChanged(QSettings::Format value);
 		void themeNamesChanged(const QStringList& value);
 		void parametersChanged(SettingsParameters *value);
 		void themesChanged(const QVariantMap& value);
 		void currentThemeChanged(const QString &value);
-		void themeChanged(const QVariantMap &theme);
+        void themeChanged(const QVariantMap &theme);
 
 	public slots:
 		void parseFolder(const QString& folder);
 		void refreshThemes(const QStringList& themes);
 		void refreshParameters(SettingsParameters *parameters);
-		void refreshTheme(const QVariantMap &theme);
+        void refreshTheme(const QString &theme);
 
 	private:
 		void initConnections() const;

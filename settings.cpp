@@ -17,10 +17,14 @@ namespace dnai
 
 	void Settings::initConnections() const
 	{
-        connect(this, SIGNAL(settingFolderChanged()), this, SLOT(parseFolder()));
-        connect(this, SIGNAL(themeNamesChanged()), this, SLOT(refreshThemes()));
-        connect(this, SIGNAL(parametersChanged()), this, SLOT(refreshParameters()));
-        connect(this, SIGNAL(currentThemeChanged()), this, SLOT(refreshTheme()));
+        connect(this, SIGNAL(settingFolderChanged(const QString&)),
+                this, SLOT(parseFolder(const QString&)));
+        connect(this, SIGNAL(themeNamesChanged(const QStringList&)),
+                this, SLOT(refreshThemes(const QStringList&)));
+        connect(this, SIGNAL(parametersChanged(SettingsParameters *)),
+                this, SLOT(refreshParameters(SettingsParameters *)));
+        connect(this, SIGNAL(currentThemeChanged(QString)),
+                this, SLOT(refreshTheme(const QString &)));
 	}
 
 	const QString& Settings::settingFolder() const
@@ -170,7 +174,7 @@ namespace dnai
 				qWarning() << "Cannot load" << basename << "with path :" << theme;
 			}
 			else
-				qDebug() << "Theme \"" << basename << "\" successfully loaded.";
+                qDebug() << "Theme" << basename << "successfully loaded.";
 		}
 	}
 
@@ -183,9 +187,10 @@ namespace dnai
 		setCurrentTheme(parameters->currentTheme());
 	}
 
-	void Settings::refreshTheme(const QVariantMap& theme)
+    void Settings::refreshTheme(const QString& theme)
 	{
-		m_theme = theme;
+        m_theme = this->operator [](theme);
+        emit themeChanged(m_theme);
 	}
 
 	bool Settings::loadJsonTheme(const QString &name, const QString &path)

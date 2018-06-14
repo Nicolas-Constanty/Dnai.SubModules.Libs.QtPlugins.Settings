@@ -17,7 +17,7 @@ namespace dnai
 		if (m_settingFolder == value)
 			return;
 		m_settingFolder = value;
-		emit settingFolderChanged(value);
+        emit settingFolderChanged(value);
 	}
 
 	const QString& SettingsParameters::prefix() const
