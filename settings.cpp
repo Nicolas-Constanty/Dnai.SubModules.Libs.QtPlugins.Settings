@@ -19,12 +19,14 @@ namespace dnai
 	{
         connect(this, SIGNAL(settingFolderChanged(const QString&)),
                 this, SLOT(parseFolder(const QString&)));
-        connect(this, SIGNAL(themeNamesChanged(const QStringList&)),
+        connect(this, SIGNAL(themePathsChanged(QStringList)),
                 this, SLOT(refreshThemes(const QStringList&)));
         connect(this, SIGNAL(parametersChanged(SettingsParameters *)),
                 this, SLOT(refreshParameters(SettingsParameters *)));
-        connect(this, SIGNAL(currentThemeChanged(QString)),
+        connect(this, SIGNAL(currentThemeChanged(const QString &)),
                 this, SLOT(refreshTheme(const QString &)));
+        connect(this, SIGNAL(currentThemeChanged(const QString &)),
+                this, SLOT(refreshThemeLoaded(const QString &)));
 	}
 
 	const QString& Settings::settingFolder() const
@@ -66,17 +68,17 @@ namespace dnai
 		emit formatChanged(value);
 	}
 
-	const QStringList& Settings::themeNames() const
+    const QStringList& Settings::themePaths() const
 	{
-		return m_themeNames;
+        return m_themePaths;
 	}
 
-	void Settings::setThemeNames(const QStringList& value)
+    void Settings::setThemePaths(const QStringList& value)
 	{
-		if (m_themeNames == value)
+        if (m_themePaths == value)
 			return;
-		m_themeNames = value;
-		emit themeNamesChanged(value);
+        m_themePaths = value;
+        emit themePathsChanged(value);
 	}
 
 	const QString& Settings::currentTheme() const
@@ -94,18 +96,18 @@ namespace dnai
 
 	void Settings::addTheme(const QString& value)
 	{
-		if (m_themeNames.contains(value))
+        if (m_themePaths.contains(value))
 			return;
-		m_themeNames.append(value);
-		emit themeNamesChanged(m_themeNames);
+        m_themePaths.append(value);
+        emit themeNamesChanged(m_themePaths);
 	}
 
 	void Settings::removeTheme(const QString& value)
 	{
-		if (!m_themeNames.contains(value))
+        if (!m_themePaths.contains(value))
 			return;
-		m_themeNames.removeOne(value);
-		emit themeNamesChanged(m_themeNames);
+        m_themePaths.removeOne(value);
+        emit themeNamesChanged(m_themePaths);
 	}
 
 	SettingsParameters* Settings::parameters() const
@@ -141,8 +143,23 @@ namespace dnai
 
 	const QVariantMap& Settings::theme() const
 	{
-		return m_theme;
-	}
+        return m_theme;
+    }
+
+    QSettings *Settings::settings()
+    {
+        return &m_settings;
+    }
+
+    bool Settings::themeLoaded() const
+    {
+        return !m_currentTheme.isEmpty();
+    }
+
+    QStringList Settings::themeNames() const
+    {
+        return QStringList(m_themes.keys());
+    }
 
 	void Settings::parseFolder(const QString &folder)
 	{
@@ -183,15 +200,20 @@ namespace dnai
 		setFormat(parameters->format());
 		setSettingFolder(parameters->settingFolder());
 		setPrefix(parameters->prefix());
-		setThemeNames(parameters->themeNames());
+        setThemePaths(parameters->themePaths());
 		setCurrentTheme(parameters->currentTheme());
 	}
 
     void Settings::refreshTheme(const QString& theme)
-	{
+    {
         m_theme = this->operator [](theme);
         emit themeChanged(m_theme);
-	}
+    }
+
+    void Settings::refreshThemeLoaded(const QString &theme)
+    {
+        emit themeLoadedChanged(!theme.isEmpty());
+    }
 
 	bool Settings::loadJsonTheme(const QString &name, const QString &path)
 	{
@@ -203,9 +225,16 @@ namespace dnai
 		const auto data = file.readAll();
 
 		try {
-			const auto obj(QJsonDocument::fromJson(data).object());
-			m_themes[name] = obj.toVariantMap();
+            QJsonParseError err;
+            const auto obj(QJsonDocument::fromJson(data, &err).object());
+            if (err.error != QJsonParseError::NoError)
+            {
+                qWarning() << err.errorString() << "at line :" << err.offset;
+                return false;
+            }
+            m_themes[name] = obj.toVariantMap();
 			emit themesChanged(m_themes);
+            emit themeNamesChanged(m_themes.keys());
 		}
 		catch (std::exception &e) {
 			Q_UNUSED(e)

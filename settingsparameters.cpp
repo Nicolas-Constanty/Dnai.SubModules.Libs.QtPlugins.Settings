@@ -46,17 +46,17 @@ namespace dnai
 		emit formatChanged(value);
 	}
 
-	const QStringList& SettingsParameters::themeNames() const
+	const QStringList& SettingsParameters::themePaths() const
 	{
-		return m_themeNames;
+		return m_themePaths;
 	}
 
-	void SettingsParameters::setThemeNames(const QStringList& value)
+	void SettingsParameters::setThemePaths(const QStringList& value)
 	{
-		if (m_themeNames == value)
+		if (m_themePaths == value)
 			return;
-		m_themeNames = value;
-		emit themeNamesChanged(value);
+		m_themePaths = value;
+		emit themePathsChanged(value);
 	}
 
 	const QString& SettingsParameters::currentTheme() const

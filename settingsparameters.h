@@ -12,7 +12,7 @@ namespace dnai
         Q_PROPERTY(QString settingFolder READ settingFolder WRITE setSettingFolder NOTIFY settingFolderChanged)
 		Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
 		Q_PROPERTY(QSettings::Format format READ format WRITE setFormat NOTIFY formatChanged)
-		Q_PROPERTY(QStringList themeNames READ themeNames WRITE setThemeNames NOTIFY themeNamesChanged)
+        Q_PROPERTY(QStringList themePaths READ themePaths WRITE setThemePaths NOTIFY themePathsChanged)
 		Q_PROPERTY(QString currentTheme READ currentTheme WRITE setCurrentTheme NOTIFY currentThemeChanged)
 	
 	public:
@@ -45,8 +45,8 @@ namespace dnai
 		/*
 		* Themes property, the list of available themes installed
 		*/
-		const QStringList& themeNames() const;
-		void setThemeNames(const QStringList& value);
+        const QStringList& themePaths() const;
+        void setThemePaths(const QStringList& value);
 
 		const QString& currentTheme() const;
 		void setCurrentTheme(const QString& value);
@@ -55,14 +55,14 @@ namespace dnai
         void settingFolderChanged(const QString& value);
 		void prefixChanged(const QString& value);
 		void formatChanged(QSettings::Format value);
-		void themeNamesChanged(const QStringList& value);
+        void themePathsChanged(const QStringList& value);
 		void currentThemeChanged(const QString& value);
 
 	private:
 		QString m_settingFolder;
 		QString m_prefix;
 		QSettings::Format m_format;
-		QStringList m_themeNames;
+        QStringList m_themePaths;
 		QString m_currentTheme;
 	};
 }

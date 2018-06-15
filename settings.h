@@ -13,12 +13,15 @@ namespace dnai
         Q_PROPERTY(QString settingFolder READ settingFolder WRITE setSettingFolder NOTIFY settingFolderChanged)
 		Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
 		Q_PROPERTY(QSettings::Format format READ format WRITE setFormat NOTIFY formatChanged)
-		Q_PROPERTY(QStringList themeNames READ themeNames WRITE setThemeNames NOTIFY themeNamesChanged)
+        Q_PROPERTY(QStringList themePaths READ themePaths WRITE setThemePaths NOTIFY themePathsChanged)
 		Q_PROPERTY(QString currentTheme READ currentTheme WRITE setCurrentTheme NOTIFY currentThemeChanged)
 
 		Q_PROPERTY(SettingsParameters *parameters READ parameters WRITE setParameters NOTIFY parametersChanged)
 		Q_PROPERTY(QVariantMap themes READ themes WRITE setThemes NOTIFY themesChanged)
 		Q_PROPERTY(QVariantMap theme READ theme NOTIFY themeChanged)
+        Q_PROPERTY(QSettings *settings READ settings NOTIFY settingsChanged)
+        Q_PROPERTY(bool themeLoaded READ themeLoaded NOTIFY themeLoadedChanged)
+        Q_PROPERTY(QStringList themeNames READ themeNames NOTIFY themeNamesChanged)
 
 	public:
 		explicit Settings(QObject* parent = nullptr);
@@ -50,8 +53,8 @@ namespace dnai
 		/*
 		 * Themes property, the list of available themes installed
 		 */
-		const QStringList& themeNames() const;
-		void setThemeNames(const QStringList& value);
+        const QStringList& themePaths() const;
+        void setThemePaths(const QStringList& value);
 		void addTheme(const QString& value);
 		void removeTheme(const QString& value);
 
@@ -67,21 +70,32 @@ namespace dnai
 
 		const QVariantMap &theme() const;
 
+        QSettings *settings();
+        void setSettings(QSettings *value);
+
+        bool themeLoaded() const;
+
+        QStringList themeNames() const;
+
 	signals :
         void settingFolderChanged(const QString& value);
 		void prefixChanged(const QString& value);
 		void formatChanged(QSettings::Format value);
-		void themeNamesChanged(const QStringList& value);
+        void themePathsChanged(const QStringList& value);
 		void parametersChanged(SettingsParameters *value);
 		void themesChanged(const QVariantMap& value);
 		void currentThemeChanged(const QString &value);
         void themeChanged(const QVariantMap &theme);
+        void settingsChanged(QSettings *value);
+        void themeLoadedChanged(bool value);
+        void themeNamesChanged(const QStringList &value);
 
 	public slots:
 		void parseFolder(const QString& folder);
 		void refreshThemes(const QStringList& themes);
 		void refreshParameters(SettingsParameters *parameters);
         void refreshTheme(const QString &theme);
+        void refreshThemeLoaded(const QString &theme);
 
 	private:
 		void initConnections() const;
@@ -90,12 +104,13 @@ namespace dnai
 	private:
 		QString m_prefix;
 		QSettings::Format m_format;
-		QStringList m_themeNames;
+        QStringList m_themePaths;
 		QVariantMap m_themes;
 		QString m_currentTheme;
 		SettingsParameters* m_parameters;
 		QString m_settingFolder;
 		QVariantMap m_theme;
+        QSettings m_settings;
 	};
 }
 
