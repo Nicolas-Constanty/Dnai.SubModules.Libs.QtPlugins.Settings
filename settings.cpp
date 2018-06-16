@@ -9,9 +9,12 @@
 namespace dnai
 {
 	Settings::Settings(QObject *parent) :
-		QObject(parent), m_format(QSettings::NativeFormat)
+        QObject(parent), m_format(QSettings::IniFormat)
 		, m_parameters(nullptr)
 	{
+#ifdef QT_DEBUG
+        m_settings.clear();
+#endif
 		initConnections();
     }
 
@@ -191,7 +194,7 @@ namespace dnai
 				qWarning() << "Cannot load" << basename << "with path :" << theme;
 			}
 			else
-                qDebug() << "Theme" << basename << "successfully loaded.";
+                qDebug() << "Dnai.Settings 1.0 successfully loaded " << basename << "theme";
 		}
 	}
 
@@ -204,9 +207,15 @@ namespace dnai
 		setCurrentTheme(parameters->currentTheme());
 	}
 
+    bool Settings::themeAlreadySet()
+    {
+        return !m_settings.value(m_prefix + "/currentTheme").toString().isEmpty();
+    }
+
     void Settings::refreshTheme(const QString& theme)
     {
         m_theme = this->operator [](theme);
+        m_settings.setValue(m_prefix + "/currentTheme", m_currentTheme);
         emit themeChanged(m_theme);
     }
 
@@ -217,32 +226,41 @@ namespace dnai
 
 	bool Settings::loadJsonTheme(const QString &name, const QString &path)
 	{
-		QFile file(path);
-		if (!file.open(QIODevice::ReadOnly)) {
-			qWarning("Couldn't open file.");
-			return false;
-		}
-		const auto data = file.readAll();
-
-		try {
-            QJsonParseError err;
-            const auto obj(QJsonDocument::fromJson(data, &err).object());
-            if (err.error != QJsonParseError::NoError)
-            {
-                qWarning() << err.errorString() << "at line :" << err.offset;
+        if (m_settings.value(m_prefix + "/themes/" + name).isValid())
+        {
+            m_themes[name] = qvariant_cast<QVariantMap>(m_settings.value(m_prefix + "/themes/" + name).toMap());
+            emit themesChanged(m_themes);
+            emit themeNamesChanged(m_themes.keys());
+        }
+        else {
+            QFile file(path);
+            if (!file.open(QIODevice::ReadOnly)) {
+                qWarning("Couldn't open file.");
                 return false;
             }
-            m_themes[name] = obj.toVariantMap();
-			emit themesChanged(m_themes);
-            emit themeNamesChanged(m_themes.keys());
-		}
-		catch (std::exception &e) {
-			Q_UNUSED(e)
-			qWarning("Couldn't parse file.");
-			file.close();
-			return false;
-		}
-		file.close();
+            const auto data = file.readAll();
+
+            try {
+                QJsonParseError err;
+                const auto obj(QJsonDocument::fromJson(data, &err).object());
+                if (err.error != QJsonParseError::NoError)
+                {
+                    qWarning() << err.errorString() << "at line :" << err.offset;
+                    return false;
+                }
+                m_themes[name] = obj.toVariantMap();
+                m_settings.setValue(m_prefix + "/themes/" + name, m_themes[name]);
+                emit themesChanged(m_themes);
+                emit themeNamesChanged(m_themes.keys());
+            }
+            catch (std::exception &e) {
+                Q_UNUSED(e)
+                qWarning("Couldn't parse file.");
+                file.close();
+                return false;
+            }
+            file.close();
+        }
 		return true;
 	}
 }

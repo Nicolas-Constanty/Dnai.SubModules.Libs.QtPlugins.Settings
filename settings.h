@@ -77,7 +77,9 @@ namespace dnai
 
         QStringList themeNames() const;
 
-	signals :
+        Q_INVOKABLE bool themeAlreadySet();
+
+    signals :
         void settingFolderChanged(const QString& value);
 		void prefixChanged(const QString& value);
 		void formatChanged(QSettings::Format value);
