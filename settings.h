@@ -78,6 +78,8 @@ namespace dnai
         QStringList themeNames() const;
 
         Q_INVOKABLE bool themeAlreadySet();
+        Q_INVOKABLE void restoreFromJson();
+        Q_INVOKABLE void saveFromMap(const QString &name, const QVariantMap &value);
 
     signals :
         void settingFolderChanged(const QString& value);

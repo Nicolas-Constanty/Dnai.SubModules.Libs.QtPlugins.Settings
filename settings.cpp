@@ -212,6 +212,18 @@ namespace dnai
         return !m_settings.value(m_prefix + "/currentTheme").toString().isEmpty();
     }
 
+    void Settings::restoreFromJson()
+    {
+        m_settings.clear();
+        refreshThemes(m_themePaths);
+    }
+
+    void Settings::saveFromMap(const QString &name, const QVariantMap &value)
+    {
+        m_themes[name] = value;
+        m_settings.setValue(m_prefix + "/themes/" + name, value);
+    }
+
     void Settings::refreshTheme(const QString& theme)
     {
         m_theme = this->operator [](theme);
