@@ -191,10 +191,10 @@ namespace dnai
 			const auto basename = f.baseName();
 			if (f.suffix() != "json" || !loadJsonTheme(basename, theme))
 			{
-				qWarning() << "Cannot load" << basename << "with path :" << theme;
+                qWarning() << "==Settings== Cannot load" << basename << "with path :" << theme;
 			}
 			else
-                qDebug() << "Dnai.Settings 1.0 successfully loaded " << basename << "theme";
+                qDebug() << "==Settings== Dnai.Settings 1.0 successfully loaded " << basename << "theme";
 		}
 	}
 
