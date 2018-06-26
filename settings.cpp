@@ -126,25 +126,17 @@ namespace dnai
 		emit parametersChanged(value);
 	}
 
-	const QVariantMap& Settings::themes() const
+    QVariantMap &Settings::themes()
 	{
-		return m_themes;
+        return m_themes;
 	}
 
-	void Settings::setThemes(const QVariantMap& value)
-	{
-		if (m_themes == value)
-			return;
-		m_themes = value;
-		emit themesChanged(value);
+    QQmlPropertyMap *Settings::operator[](const QString& value) const
+    {
+        return qvariant_cast<QQmlPropertyMap *>(m_themes[value]);
 	}
 
-	QVariantMap Settings::operator[](const QString& value) const
-	{
-		return qvariant_cast<QVariantMap>(m_themes[value]);
-	}
-
-	const QVariantMap& Settings::theme() const
+    QQmlPropertyMap *Settings::theme()
 	{
         return m_theme;
     }
@@ -218,15 +210,29 @@ namespace dnai
         refreshThemes(m_themePaths);
     }
 
+
+    void Settings::setThemeValue(const QString &path, const QVariant& value, const QChar separator)
+    {
+        QQmlPropertyMap *m = m_theme;
+        const auto tokens = path.split(separator);
+        for (auto i = 0; i < tokens.length() - 1; i++)
+        {
+            m = reinterpret_cast<QQmlPropertyMap*>((*m)[tokens.at(i)].data());
+        }
+        (*m)[tokens.last()] = value;
+    }
+
     void Settings::saveFromMap(const QString &name, const QVariantMap &value)
     {
         m_themes[name] = value;
         m_settings.setValue(m_prefix + "/themes/" + name, value);
+        if (m_currentTheme == name)
+            refreshTheme(m_currentTheme);
     }
 
     void Settings::refreshTheme(const QString& theme)
     {
-        m_theme = this->operator [](theme);
+        m_theme = (*this)[theme];
         m_settings.setValue(m_prefix + "/currentTheme", m_currentTheme);
         emit themeChanged(m_theme);
     }
@@ -240,7 +246,8 @@ namespace dnai
 	{
         if (m_settings.value(m_prefix + "/themes/" + name).isValid())
         {
-            m_themes[name] = qvariant_cast<QVariantMap>(m_settings.value(m_prefix + "/themes/" + name).toMap());
+            auto m = new QVariantMap(m_settings.value(m_prefix + "/themes/" + name).toMap());
+            m_themes[name] = *m;
             emit themesChanged(m_themes);
             emit themeNamesChanged(m_themes.keys());
         }
@@ -260,8 +267,10 @@ namespace dnai
                     qWarning() << err.errorString() << "at line :" << err.offset;
                     return false;
                 }
-                m_themes[name] = obj.toVariantMap();
-                m_settings.setValue(m_prefix + "/themes/" + name, m_themes[name]);
+                const auto map = obj.toVariantMap();
+                auto m = qVariantMapToQQmlPropertyMap(map);
+                m_themes[name] = QVariant::fromValue(m);
+                m_settings.setValue(m_prefix + "/themes/" + name, map);
                 emit themesChanged(m_themes);
                 emit themeNamesChanged(m_themes.keys());
             }
@@ -275,5 +284,23 @@ namespace dnai
         }
 		return true;
 	}
+
+    QQmlPropertyMap *Settings::qVariantMapToQQmlPropertyMap(const QVariantMap& map)
+    {
+        QQmlPropertyMap *root = new QQmlPropertyMap();
+        for (const auto &key : map.keys())
+        {
+            const auto &m = map[key].toMap();
+            if (m.isEmpty())
+            {
+                root->insert(key, map[key]);
+            }
+            else
+            {
+                root->insert(key, QVariant::fromValue(qVariantMapToQQmlPropertyMap(m)));
+            }
+        }
+        return root;
+    }
 }
 

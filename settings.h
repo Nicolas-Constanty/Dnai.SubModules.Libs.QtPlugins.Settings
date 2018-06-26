@@ -2,6 +2,7 @@
 #define SETTINGS_H
 
 #include <QStringList>
+#include <QQmlPropertyMap>
 
 #include "settingsparameters.h"
 
@@ -17,8 +18,8 @@ namespace dnai
 		Q_PROPERTY(QString currentTheme READ currentTheme WRITE setCurrentTheme NOTIFY currentThemeChanged)
 
 		Q_PROPERTY(SettingsParameters *parameters READ parameters WRITE setParameters NOTIFY parametersChanged)
-		Q_PROPERTY(QVariantMap themes READ themes WRITE setThemes NOTIFY themesChanged)
-		Q_PROPERTY(QVariantMap theme READ theme NOTIFY themeChanged)
+        Q_PROPERTY(QVariantMap themes READ themes NOTIFY themesChanged)
+        Q_PROPERTY(QQmlPropertyMap *theme READ theme NOTIFY themeChanged)
         Q_PROPERTY(QSettings *settings READ settings NOTIFY settingsChanged)
         Q_PROPERTY(bool themeLoaded READ themeLoaded NOTIFY themeLoadedChanged)
         Q_PROPERTY(QStringList themeNames READ themeNames NOTIFY themeNamesChanged)
@@ -64,11 +65,11 @@ namespace dnai
 		SettingsParameters *parameters() const;
 		void setParameters(SettingsParameters *value);
 
-		const QVariantMap& themes() const;
+        QVariantMap &themes();
 		void setThemes(const QVariantMap& value);
-		QVariantMap operator[](const QString& value) const;
+        QQmlPropertyMap *operator[](const QString& value) const;
 
-		const QVariantMap &theme() const;
+        QQmlPropertyMap *theme();
 
         QSettings *settings();
         void setSettings(QSettings *value);
@@ -80,6 +81,7 @@ namespace dnai
         Q_INVOKABLE bool themeAlreadySet();
         Q_INVOKABLE void restoreFromJson();
         Q_INVOKABLE void saveFromMap(const QString &name, const QVariantMap &value);
+        Q_INVOKABLE void setThemeValue(const QString &path, const QVariant &value, const QChar separator);
 
     signals :
         void settingFolderChanged(const QString& value);
@@ -89,7 +91,7 @@ namespace dnai
 		void parametersChanged(SettingsParameters *value);
 		void themesChanged(const QVariantMap& value);
 		void currentThemeChanged(const QString &value);
-        void themeChanged(const QVariantMap &theme);
+        void themeChanged(QQmlPropertyMap *theme);
         void settingsChanged(QSettings *value);
         void themeLoadedChanged(bool value);
         void themeNamesChanged(const QStringList &value);
@@ -113,9 +115,10 @@ namespace dnai
 		QString m_currentTheme;
 		SettingsParameters* m_parameters;
 		QString m_settingFolder;
-		QVariantMap m_theme;
+        QQmlPropertyMap *m_theme;
         QSettings m_settings;
-	};
+        QQmlPropertyMap *qVariantMapToQQmlPropertyMap(const QVariantMap &map);
+    };
 }
 
 #endif // SETTINGS_H
