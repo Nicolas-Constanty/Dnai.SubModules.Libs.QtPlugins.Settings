@@ -21,11 +21,11 @@ namespace dnai
         Q_PROPERTY(QVariantMap themes READ themes NOTIFY themesChanged)
         Q_PROPERTY(QQmlPropertyMap *theme READ theme NOTIFY themeChanged)
         Q_PROPERTY(QSettings *settings READ settings NOTIFY settingsChanged)
-        Q_PROPERTY(bool themeLoaded READ themeLoaded NOTIFY themeLoadedChanged)
+        Q_PROPERTY(bool themeLoaded READ themeLoaded WRITE refreshThemeLoaded NOTIFY themeLoadedChanged)
         Q_PROPERTY(QStringList themeNames READ themeNames NOTIFY themeNamesChanged)
 
 	public:
-		explicit Settings(QObject* parent = nullptr);
+        explicit Settings(QObject* parent = nullptr);
 
 		/**
 		 * \brief Return the settingFolder property value
@@ -101,7 +101,7 @@ namespace dnai
 		void refreshThemes(const QStringList& themes);
 		void refreshParameters(SettingsParameters *parameters);
         void refreshTheme(const QString &theme);
-        void refreshThemeLoaded(const QString &theme);
+        void refreshThemeLoaded(bool theme);
 
 	private:
 		void initConnections() const;
@@ -118,6 +118,7 @@ namespace dnai
         QQmlPropertyMap *m_theme;
         QSettings m_settings;
         QQmlPropertyMap *qVariantMapToQQmlPropertyMap(const QVariantMap &map);
+        bool m_themeLoaded;
     };
 }
 

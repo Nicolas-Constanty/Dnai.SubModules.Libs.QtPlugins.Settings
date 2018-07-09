@@ -11,11 +11,12 @@ namespace dnai
 	Settings::Settings(QObject *parent) :
         QObject(parent), m_format(QSettings::IniFormat)
 		, m_parameters(nullptr)
+        , m_themeLoaded(false)
 	{
 #ifdef QT_DEBUG
         m_settings.clear();
 #endif
-		initConnections();
+        initConnections();
     }
 
 	void Settings::initConnections() const
@@ -28,8 +29,6 @@ namespace dnai
                 this, SLOT(refreshParameters(SettingsParameters *)));
         connect(this, SIGNAL(currentThemeChanged(const QString &)),
                 this, SLOT(refreshTheme(const QString &)));
-        connect(this, SIGNAL(currentThemeChanged(const QString &)),
-                this, SLOT(refreshThemeLoaded(const QString &)));
 	}
 
 	const QString& Settings::settingFolder() const
@@ -148,7 +147,7 @@ namespace dnai
 
     bool Settings::themeLoaded() const
     {
-        return !m_currentTheme.isEmpty();
+        return m_themeLoaded;
     }
 
     QStringList Settings::themeNames() const
@@ -237,19 +236,25 @@ namespace dnai
         emit themeChanged(m_theme);
     }
 
-    void Settings::refreshThemeLoaded(const QString &theme)
+    void Settings::refreshThemeLoaded(bool isLoaded)
     {
-        emit themeLoadedChanged(!theme.isEmpty());
+        if (m_themeLoaded == isLoaded)
+            return;
+        m_themeLoaded = isLoaded;
+        emit themeLoadedChanged(m_themeLoaded);
     }
 
 	bool Settings::loadJsonTheme(const QString &name, const QString &path)
 	{
         if (m_settings.value(m_prefix + "/themes/" + name).isValid())
         {
-            auto m = new QVariantMap(m_settings.value(m_prefix + "/themes/" + name).toMap());
-            m_themes[name] = *m;
+            refreshThemeLoaded(true);
+            auto map = static_cast<QVariantMap>(m_settings.value(m_prefix + "/themes/" + name).toMap());
+            auto m = qVariantMapToQQmlPropertyMap(map);
+            m_themes[name] = QVariant::fromValue(m);
             emit themesChanged(m_themes);
             emit themeNamesChanged(m_themes.keys());
+            qDebug() << "Dnai.Settings ===== " << m_prefix + "/themes/" + name << m;
         }
         else {
             QFile file(path);
