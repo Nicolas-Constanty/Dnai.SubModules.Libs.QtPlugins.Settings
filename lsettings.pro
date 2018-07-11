@@ -6,8 +6,6 @@ CONFIG += c++11
 
 TARGET  = dnaisettingsplugin
 
-RESOURCES += qml.qrc
-
 pluginfiles.files += \
 
 
