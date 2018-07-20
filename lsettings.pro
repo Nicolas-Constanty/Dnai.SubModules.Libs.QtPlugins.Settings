@@ -5,7 +5,9 @@ QT += quick
 CONFIG += c++11
 
 TARGET  = dnaisettingsplugin
-
+CONFIG(release, debug|release) {
+DEFINES += QT_NO_DEBUG_OUTPUT
+}
 pluginfiles.files += \
 
 
