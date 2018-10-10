@@ -17,6 +17,43 @@ namespace dnai
         m_settings.clear();
 #endif
         initConnections();
+        loadDefaultTheme();
+    }
+
+    void Settings::loadDefaultTheme()
+    {
+        m_themePaths.append(":/default.json");
+        m_currentTheme = "default";
+        const auto f = QFileInfo(m_themePaths[0]);
+        const auto basename = f.baseName();
+        QFile file(m_themePaths[0]);
+        if (!file.open(QIODevice::ReadOnly)) {
+            qWarning("Couldn't open file.");
+            return;
+        }
+        const auto data = file.readAll();
+
+        try {
+            QJsonParseError err;
+            const auto obj(QJsonDocument::fromJson(data, &err).object());
+            if (err.error != QJsonParseError::NoError)
+            {
+                qWarning() << err.errorString() << "at line :" << err.offset;
+                return;
+            }
+            const auto map = obj.toVariantMap();
+            auto m = qVariantMapToQQmlPropertyMap(map);
+            m_themes[basename] = QVariant::fromValue(m);
+            m_theme = (*this)[basename];
+            qDebug() << basename << m_themes[basename];
+        }
+        catch (std::exception &e) {
+            Q_UNUSED(e)
+            qWarning("Couldn't parse file.");
+            file.close();
+            return;
+        }
+        file.close();
     }
 
 	void Settings::initConnections() const
@@ -246,17 +283,17 @@ namespace dnai
 
 	bool Settings::loadJsonTheme(const QString &name, const QString &path)
 	{
-//        if (m_settings.value(m_prefix + "/themes/" + name).isValid())
-//        {
-//            refreshThemeLoaded(true);
-//            auto map = static_cast<QVariantMap>(m_settings.value(m_prefix + "/themes/" + name).toMap());
-//            auto m = qVariantMapToQQmlPropertyMap(map);
-//            m_themes[name] = QVariant::fromValue(m);
-//            emit themesChanged(m_themes);
-//            emit themeNamesChanged(m_themes.keys());
-//            qDebug() << "Dnai.Settings ===== " << m_prefix + "/themes/" + name << m;
-//        }
-//        else {
+        if (m_settings.value(m_prefix + "/themes/" + name).isValid())
+        {
+            refreshThemeLoaded(true);
+            auto map = static_cast<QVariantMap>(m_settings.value(m_prefix + "/themes/" + name).toMap());
+            auto m = qVariantMapToQQmlPropertyMap(map);
+            m_themes[name] = QVariant::fromValue(m);
+            emit themesChanged(m_themes);
+            emit themeNamesChanged(m_themes.keys());
+            qDebug() << "Dnai.Settings ===== " << m_prefix + "/themes/" + name << m;
+        }
+        else {
             QFile file(path);
             if (!file.open(QIODevice::ReadOnly)) {
                 qWarning("Couldn't open file.");
@@ -286,7 +323,7 @@ namespace dnai
                 return false;
             }
             file.close();
-//        }
+        }
 		return true;
 	}
 

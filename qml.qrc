@@ -1,3 +1,5 @@
 <RCC>
-    <qresource prefix="/"/>
+    <qresource prefix="/">
+        <file>default.json</file>
+    </qresource>
 </RCC>

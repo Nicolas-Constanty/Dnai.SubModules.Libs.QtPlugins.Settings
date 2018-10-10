@@ -108,6 +108,8 @@ namespace dnai
 		bool loadJsonTheme(const QString &name, const QString& path);
 
 	private:
+        void loadDefaultTheme();
+
 		QString m_prefix;
 		QSettings::Format m_format;
         QStringList m_themePaths;
