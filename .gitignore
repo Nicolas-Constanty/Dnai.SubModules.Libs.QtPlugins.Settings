@@ -1,12 +1,21 @@
 
+\.vs/
+
 release/
 
 debug/
 
-\.vs/
+*.Release
 
-*.user
+*.vcxproj
 
 *.filters
 
-*.vcxproj
+*.user
+
+*.ltheme
+
+*.Debug
+
+
+*.lsettings
