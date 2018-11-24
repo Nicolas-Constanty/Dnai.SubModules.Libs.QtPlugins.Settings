@@ -11,6 +11,7 @@ namespace dnai
 	Settings::Settings(QObject *parent) :
         QObject(parent), m_format(QSettings::IniFormat)
 		, m_parameters(nullptr)
+        , m_theme(nullptr)
         , m_themeLoaded(false)
 	{
 #ifdef QT_DEBUG
@@ -28,13 +29,13 @@ namespace dnai
         const auto basename = f.baseName();
         QFile file(m_themePaths[0]);
         if (!file.open(QIODevice::ReadOnly)) {
-            qWarning("Couldn't open file.");
+            qWarning() << "Couldn't open file.";
             return;
         }
         const auto data = file.readAll();
 
         try {
-            QJsonParseError err;
+            QJsonParseError err = {};
             const auto obj(QJsonDocument::fromJson(data, &err).object());
             if (err.error != QJsonParseError::NoError)
             {
@@ -49,7 +50,7 @@ namespace dnai
         }
         catch (std::exception &e) {
             Q_UNUSED(e)
-            qWarning("Couldn't parse file.");
+            qWarning() << "Couldn't parse file.";
             file.close();
             return;
         }
@@ -58,14 +59,14 @@ namespace dnai
 
 	void Settings::initConnections() const
 	{
-        connect(this, SIGNAL(settingFolderChanged(const QString&)),
-                this, SLOT(parseFolder(const QString&)));
+        connect(this, SIGNAL(settingFolderChanged(QString)),
+                this, SLOT(parseFolder(QString)));
         connect(this, SIGNAL(themePathsChanged(QStringList)),
-                this, SLOT(refreshThemes(const QStringList&)));
-        connect(this, SIGNAL(parametersChanged(SettingsParameters *)),
-                this, SLOT(refreshParameters(SettingsParameters *)));
-        connect(this, SIGNAL(currentThemeChanged(const QString &)),
-                this, SLOT(refreshTheme(const QString &)));
+                this, SLOT(refreshThemes(QStringList)));
+        connect(this, SIGNAL(parametersChanged(SettingsParameters*)),
+                this, SLOT(refreshParameters(SettingsParameters*)));
+        connect(this, SIGNAL(currentThemeChanged(QString)),
+                this, SLOT(refreshTheme(QString)));
 	}
 
 	const QString& Settings::settingFolder() const
@@ -253,7 +254,7 @@ namespace dnai
         const auto tokens = path.split(separator);
         for (auto i = 0; i < tokens.length() - 1; i++)
         {
-            m = reinterpret_cast<QQmlPropertyMap*>((*m)[tokens.at(i)].data());
+            m = static_cast<QQmlPropertyMap*>((*m)[tokens.at(i)].data());
         }
         (*m)[tokens.last()] = value;
     }
@@ -296,13 +297,13 @@ namespace dnai
         else {
             QFile file(path);
             if (!file.open(QIODevice::ReadOnly)) {
-                qWarning("Couldn't open file.");
+                qWarning() << "Couldn't open file.";
                 return false;
             }
             const auto data = file.readAll();
 
             try {
-                QJsonParseError err;
+                QJsonParseError err = {};
                 const auto obj(QJsonDocument::fromJson(data, &err).object());
                 if (err.error != QJsonParseError::NoError)
                 {
@@ -318,7 +319,7 @@ namespace dnai
             }
             catch (std::exception &e) {
                 Q_UNUSED(e)
-                qWarning("Couldn't parse file.");
+                qWarning() << "Couldn't parse file.";
                 file.close();
                 return false;
             }
@@ -329,17 +330,18 @@ namespace dnai
 
     QQmlPropertyMap *Settings::qVariantMapToQQmlPropertyMap(const QVariantMap& map)
     {
-        QQmlPropertyMap *root = new QQmlPropertyMap();
-        for (const auto &key : map.keys())
+        auto root = new QQmlPropertyMap();
+        for (auto it = map.constBegin(); it != map.constEnd(); it++)
         {
-            const auto &m = map[key].toMap();
+            const auto &k = it.key();
+            const auto &m = map[k].toMap();
             if (m.isEmpty())
             {
-                root->insert(key, map[key]);
+                root->insert(k, map[k]);
             }
             else
             {
-                root->insert(key, QVariant::fromValue(qVariantMapToQQmlPropertyMap(m)));
+                root->insert(k, QVariant::fromValue(qVariantMapToQQmlPropertyMap(m)));
             }
         }
         return root;
